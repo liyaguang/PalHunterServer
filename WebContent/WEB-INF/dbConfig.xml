@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connection name="default">
+	<ip>geodb.usc.edu</ip>
+	<username>team2</username>
+	<password>team2</password>
+	<port>1521</port>
+	<sid>GEODBS</sid>
+</connection>
