@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/log4j-api-2.1.jar" sourcepath="WebContent/WEB-INF/lib/log4j-api-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/log4j-core-2.1.jar" sourcepath="WebContent/WEB-INF/lib/log4j-core-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ojdbc6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/sdoapi.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
