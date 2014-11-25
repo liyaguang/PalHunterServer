@@ -1,4 +1,4 @@
-package edu.usc.palhunter.servlets;
+package edu.usc.palhunter.apis;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,10 +9,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.usc.palhunter.business.UserManager;
+
 /**
  * Servlet implementation class GetUserInfo
  */
-@WebServlet(description = "Get User Info", urlPatterns = { "/GetUserInfo" })
+@WebServlet(description = "Get User Info", urlPatterns = { "/apis/GetUserInfo" })
 public class GetUserInfo extends HttpServlet {
   private static final long serialVersionUID = 1L;
 
@@ -32,10 +37,22 @@ public class GetUserInfo extends HttpServlet {
       throws ServletException, IOException {
     // TODO Auto-generated method stub
     PrintWriter pw = response.getWriter();
-    pw.println("Welcome to PalHunter!");
-    String fileName = "/WEB-INF/dbConfig.xml";
-    pw.println(request.getSession().
-        getServletContext().getRealPath(fileName));
+    // pw.println("Welcome to PalHunter!");
+    // String fileName = "/WEB-INF/dbConfig.xml";
+    // pw.println(request.getSession().getServletContext().getRealPath(fileName));
+    JSONObject result = new JSONObject();
+    UserManager userManager = new UserManager();
+
+    int userId = Integer.parseInt(request.getParameter("userId").trim());
+    String userName = userManager.getUser(userId);
+    try {
+      result.put("userName", userName);
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    response.getWriter().print(result.toString());
+
   }
 
   /**

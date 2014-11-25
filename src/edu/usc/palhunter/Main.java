@@ -6,5 +6,8 @@ public class Main {
     // TODO Auto-generated method stub
     System.out.println("Hello Palhunter");
   }
+  public static void getDataTest() {
+    String sql = "select * from users";
+  }
 
 }

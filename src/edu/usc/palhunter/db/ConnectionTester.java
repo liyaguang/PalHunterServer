@@ -1,12 +1,18 @@
 package edu.usc.palhunter.db;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.util.IntegerMapper;
 
 public class ConnectionTester {
 
   public static void main(String[] args) {
     // TODO Auto-generated method stub
-    testConn();
+//    testConn();
+    jdbiTest();
 
   }
 
@@ -22,6 +28,16 @@ public class ConnectionTester {
     } catch (ClassNotFoundException | SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
+    }
+  }
+
+  public static void jdbiTest() {
+    DBHelper dbHelper = new DBHelper();
+    Handle h = dbHelper.getHandle();
+    List<Integer> ids = h.createQuery("select USER_ID from USERS").bind("id", 0)
+        .map(IntegerMapper.FIRST).list();
+    for (int id:ids) {
+      System.out.println(id);
     }
   }
 
