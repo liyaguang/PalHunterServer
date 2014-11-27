@@ -85,11 +85,21 @@ public class NotificationManager extends TableManager {
 
   public String getRegistrationId(int userId) throws SQLException, ClassNotFoundException{
       String sql = "select rid from push_info where user_id = "+userId;
-      ResultSet rs = (new DBHelper()).executeQuery(sql);
+      DBHelper db = new DBHelper();
+      ResultSet rs = db.executeQuery(sql);
       String rid = "";
       while(rs.next()){
           return rs.getString(1);
       }
+      db.close();
       return rid;
+  }
+  public void saveNotification(Notification noti) throws ClassNotFoundException, SQLException{
+      String sql = "insert into notification (user_id, content, time, type) values("+noti.getUserId()+
+              ", '"+noti.getContent()+"', CURRENT_TIMESTAMP, "+noti.getType()+")";
+      DBHelper db = new DBHelper();
+      db.executeQuery(sql);
+      db.close();
+      
   }
 }

@@ -7,6 +7,7 @@ import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 
 import edu.usc.infolab.roadnetwork.IGeoPoint;
 import edu.usc.palhunter.db.DBHelper;
+import edu.usc.palhunter.db.Notification;
 import edu.usc.palhunter.db.TrjPoint;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class TrajectoryManager extends TableManager {
 
 
     db.executeQuery(sql);
-
+    
     /*
      * Find nearest neighbor before update
      */
@@ -100,22 +101,31 @@ public class TrajectoryManager extends TableManager {
         System.out.println("New neighbor id is :" + newNeighborId);
         
         /*
-         send notification
+        close db
+        */
+        db.close();
+        /*
+         send and save notification
          */
         if (newNeighborId != neighborId) {
-            //notify 
             User user = (new UserManager()).getUser(newNeighborId);
             if (user ==  null) return;
             String notificationMessage  =  NotificationManager.NEAREST_FRIEND+user.getNick();
-            
+            Notification noti = new Notification(-1, userId, notificationMessage, null, 1);
             System.out.println("new neighbor name: "+ user.getNick());
             NotificationManager notimanager = new NotificationManager();
             
+            /**
+             * send notification
+             */
             String rid = notimanager.getRegistrationId(userId);
             ArrayList<String> rids = new ArrayList<>();
             rids.add(rid);
             notimanager.sendNotification(rids, notificationMessage);
-//            notimanager.sendNotification(null, sql)
+            /**
+             * save notification
+             */
+            notimanager.saveNotification(noti);
         }
 
 
