@@ -22,4 +22,5 @@ public class APITest {
         trajectoryManager.updateLocation(6, point);
     }
     
+
 }

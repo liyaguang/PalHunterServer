@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.usc.palhunter.business.UserManager;
+import edu.usc.palhunter.db.User;
 
 /**
  * Servlet implementation class GetUserInfo
@@ -44,9 +45,9 @@ public class GetUserInfo extends HttpServlet {
     UserManager userManager = new UserManager();
 
     int userId = Integer.parseInt(request.getParameter("userId").trim());
-    String userName = userManager.getUser(userId);
+    User user = userManager.getUser(userId);
     try {
-      result.put("userName", userName);
+      result.put("userName", user.getNick());
     } catch (JSONException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
