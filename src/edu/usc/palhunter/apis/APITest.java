@@ -18,7 +18,7 @@ public class APITest {
     
     public static void main(String[] args) throws ClassNotFoundException, SQLException{
         TrajectoryManager trajectoryManager = new TrajectoryManager();
-        GeoPoint point = new GeoPoint(11.65,113.54) ;
+        GeoPoint point = new GeoPoint(11.65,13.54) ;
         trajectoryManager.updateLocation(6, point);
     }
     
