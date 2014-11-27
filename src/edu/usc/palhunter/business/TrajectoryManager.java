@@ -6,6 +6,7 @@ import edu.usc.infolab.roadnetwork.IGeoPoint;
 import edu.usc.palhunter.db.DBHelper;
 import edu.usc.palhunter.db.User;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 
 public class TrajectoryManager {
 
@@ -22,7 +23,7 @@ public class TrajectoryManager {
 
         String sql = "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
         + point.getLat()+","+point.getLng()+","+userId+","+"SDO_GEOMETRY(2001, 8307, \n"
-        + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) );";
+        + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) )";
 
         db.executeQuery(sql);
         
@@ -76,8 +77,16 @@ public class TrajectoryManager {
         if (newNeighborId != neighborId) {
             //notify 
             User user = (new UserManager()).getUser(newNeighborId);
+            if (user ==  null) return;
+            String notificationMessage  =  NotificationManager.NEAREST_FRIEND+user.getNick();
+            
             System.out.println("new neighbor name: "+ user.getNick());
             NotificationManager notimanager = new NotificationManager();
+            
+            String rid = notimanager.getRegistrationId(userId);
+            ArrayList<String> rids = new ArrayList<>();
+            rids.add(rid);
+            notimanager.sendNotification(rids, notificationMessage);
 //            notimanager.sendNotification(null, sql)
         }
 

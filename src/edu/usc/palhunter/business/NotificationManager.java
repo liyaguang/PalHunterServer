@@ -1,5 +1,6 @@
 package edu.usc.palhunter.business;
 
+import edu.usc.palhunter.db.DBHelper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,12 +17,14 @@ import org.json.JSONObject;
 
 import edu.usc.palhunter.db.Notification;
 import edu.usc.palhunter.util.Utility;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class NotificationManager extends TableManager {
 
   private static final String TABLE_NAME = "NOTIFICATION";
   private static final String GOOGLE_API_KEY = "AIzaSyAg4wpwDTMnJE7t4FEBux_upfPeFBskTVM";
-
+  public static final String NEAREST_FRIEND ="Nearest friend is ";
   public Notification getNotification(int notificationId) {
     String sql = String.format("select * from %s where notification_id = :id");
     return getHandle().createQuery(sql).bind("id", notificationId)
@@ -48,7 +51,7 @@ public class NotificationManager extends TableManager {
         .bind("rid", rid).execute();
     getHandle().commit();
   }
-
+ 
   public String sendNotification(List<String> regIds, String content) {
     String result = "";
     JSONObject message = new JSONObject();
@@ -80,4 +83,13 @@ public class NotificationManager extends TableManager {
     return result;
   }
 
+  public String getRegistrationId(int userId) throws SQLException, ClassNotFoundException{
+      String sql = "select rid from push_info where user_id = "+userId;
+      ResultSet rs = (new DBHelper()).executeQuery(sql);
+      String rid = "";
+      while(rs.next()){
+          return rs.getString(1);
+      }
+      return rid;
+  }
 }
