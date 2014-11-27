@@ -19,72 +19,95 @@ public class TrajectoryManager extends TableManager {
   public void updateLocation(int userId, IGeoPoint point)
       throws ClassNotFoundException, SQLException {
 
-  
+    DBHelper db = getDB();
 
-  DBHelper db = getDB();
+    String sql = "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
+        + point.getLat()
+        + ","
+        + point.getLng()
+        + ","
+        + userId
+        + ","
+        + "SDO_GEOMETRY(2001, 8307, \n"
+        + "    SDO_POINT_TYPE("
+        + point.getLat() + "," + point.getLng() + ",NULL), NULL, NULL) );";
 
-  String sql = "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
-  + point.getLat()+","+point.getLng()+","+userId+","+"SDO_GEOMETRY(2001, 8307, \n"
-  + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) );";
+    db.executeQuery(sql);
 
-  db.executeQuery(sql);
-  
-  /*
-   Find nearest neighbor before update 
-   */
-  String nearestNeighbor = "select /*+ordered*/ user_id, sdo_nn_distance (1) distance from current_location where user_id <> " + userId + " and sdo_nn(location, \n"
-          + "(select location from current_location where user_id = " + userId + "),'sdo_num_res=3',1)='TRUE'  ORDER BY distance ";
+    /*
+     * Find nearest neighbor before update
+     */
+    String nearestNeighbor = "select /*+ordered*/ user_id, sdo_nn_distance (1) distance from current_location where user_id <> "
+        + userId
+        + " and sdo_nn(location, \n"
+        + "(select location from current_location where user_id = "
+        + userId
+        + "),'sdo_num_res=3',1)='TRUE'  ORDER BY distance ";
 
-  ResultSet rs = db.executeQuery(nearestNeighbor);
-  int neighborId = 0;
-  while (rs.next()) {
+    ResultSet rs = db.executeQuery(nearestNeighbor);
+    int neighborId = 0;
+    while (rs.next()) {
       neighborId = rs.getInt(1);
       if (neighborId > 0) {
-          break;
+        break;
       }
-  }
-  System.out.println("neighbor id is :" + neighborId);
-  /*
-   update current location
-   */
-  String updateCurrentLocation = "declare exist number;\n"
-          + "begin\n"
-          + "select count(user_id) into exist from current_location where user_id = " + userId + ";\n"
-          + "if exist > 0 then\n"
-          + "update current_location set attime = CURRENT_TIMESTAMP, location = SDO_GEOMETRY(2001, 8307, \n"
-          + "    SDO_POINT_TYPE(" + point.getLat() + "," + point.getLng() + ",NULL), NULL, NULL) where user_id = " + userId + ";\n"
-          + "    else \n"
-          + "    insert into current_location (user_id, location, attime) values (\n"
-          + "    " + userId + ", SDO_GEOMETRY(2001, 8307, \n"
-          + "    SDO_POINT_TYPE(" + point.getLat() + "," + point.getLng() + ",NULL), NULL, NULL), CURRENT_TIMESTAMP\n"
-          + "    );\n"
-          + "    end if;\n"
-          + "end;";
-  db.executeQuery(updateCurrentLocation);
+    }
+    System.out.println("neighbor id is :" + neighborId);
+    /*
+     * update current location
+     */
+    String updateCurrentLocation = "declare exist number;\n"
+        + "begin\n"
+        + "select count(user_id) into exist from current_location where user_id = "
+        + userId
+        + ";\n"
+        + "if exist > 0 then\n"
+        + "update current_location set attime = CURRENT_TIMESTAMP, location = SDO_GEOMETRY(2001, 8307, \n"
+        + "    SDO_POINT_TYPE("
+        + point.getLat()
+        + ","
+        + point.getLng()
+        + ",NULL), NULL, NULL) where user_id = "
+        + userId
+        + ";\n"
+        + "    else \n"
+        + "    insert into current_location (user_id, location, attime) values (\n"
+        + "    "
+        + userId
+        + ", SDO_GEOMETRY(2001, 8307, \n"
+        + "    SDO_POINT_TYPE("
+        + point.getLat()
+        + ","
+        + point.getLng()
+        + ",NULL), NULL, NULL), CURRENT_TIMESTAMP\n"
+        + "    );\n"
+        + "    end if;\n" + "end;";
+    db.executeQuery(updateCurrentLocation);
 
-  /*
-   Find new nearest neighbor id
-   */
-  rs = db.executeQuery(nearestNeighbor);
-  int newNeighborId = 0;
-  while (rs.next()) {
+    /*
+     * Find new nearest neighbor id
+     */
+    rs = db.executeQuery(nearestNeighbor);
+    int newNeighborId = 0;
+    while (rs.next()) {
       newNeighborId = rs.getInt(1);
-      if(newNeighborId > 0) break;
-  }
-  System.out.println("New neighbor id is :" + newNeighborId);
-  
-  /*
-   send notification
-   */
-  if (newNeighborId != neighborId) {
-      //notify 
-      User user = (new UserManager()).getUser(newNeighborId);
-      System.out.println("new neighbor name: "+ user.getNick());
-      NotificationManager notimanager = new NotificationManager();
-//      notimanager.sendNotification(null, sql)
-  }
+      if (newNeighborId > 0)
+        break;
+    }
+    System.out.println("New neighbor id is :" + newNeighborId);
 
-}
+    /*
+     * send notification
+     */
+    if (newNeighborId != neighborId) {
+      // notify
+      User user = (new UserManager()).getUser(newNeighborId);
+      System.out.println("new neighbor name: " + user.getNick());
+      NotificationManager notimanager = new NotificationManager();
+      // notimanager.sendNotification(null, sql)
+    }
+
+  }
 
   public List<TrjPoint> getTrjPoints(int startPointId, int endPointId) {
     String sql = String
