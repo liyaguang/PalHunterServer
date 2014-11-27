@@ -8,6 +8,8 @@ import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 import edu.usc.infolab.roadnetwork.IGeoPoint;
 import edu.usc.palhunter.db.DBHelper;
 import edu.usc.palhunter.db.TrjPoint;
+import java.sql.ResultSet;
+import edu.usc.palhunter.db.User;
 
 public class TrajectoryManager extends TableManager {
 
@@ -16,74 +18,73 @@ public class TrajectoryManager extends TableManager {
 
   public void updateLocation(int userId, IGeoPoint point)
       throws ClassNotFoundException, SQLException {
-    DBHelper db = getDB();
-    // String sql
-    // ="Insert into "+TABLE_NAME+"(time, lat, lng, user_id, location) values(CURRENT_TIMESTAMP,\n"
-    // +point.getLat()+ ","+
-    // point.getLng()+", "+userId+", SDO_GEOMETRY(2001, 8307, \n"
-    // +
-    // "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL))"
-    // ;
-    // db.executeQuery(sql);
 
-    // String sql = "declare exist number; begin "+
-    // "select count(user_id) into exist  from TRAJECTORY where user_id = "+userId+
-    // ";"+
-    // " if exist > 0 then "+
-    // "update TRAJECTORY set time =CURRENT_TIMESTAMP, lat= "+point.getLat()+","+
-    // "lng = "+point.getLng()+", location=SDO_GEOMETRY(2001, 8307, \n"
-    // +
-    // "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) where user_id = "+userId+";\n"
-    // + "else \n"+
-    // "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
-    // +
-    // point.getLat()+","+point.getLng()+","+userId+","+"SDO_GEOMETRY(2001, 8307, \n"
-    // +
-    // "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) );"
-    // + "    end if;\n"
-    // + "end;";
+  
 
-    String sql = "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
-        + point.getLat()
-        + ","
-        + point.getLng()
-        + ","
-        + userId
-        + ","
-        + "SDO_GEOMETRY(2001, 8307, \n"
-        + "    SDO_POINT_TYPE("
-        + point.getLat() + "," + point.getLng() + ",NULL), NULL, NULL) );";
+  DBHelper db = getDB();
 
-    db.executeQuery(sql);
-    String updateCurrentLocation = "declare exist number;\n"
-        + "begin\n"
-        + "select count(user_id) into exist from current_location where user_id = "
-        + userId
-        + ";\n"
-        + "if exist > 0 then\n"
-        + "update current_location set attime = CURRENT_TIMESTAMP, location = SDO_GEOMETRY(2001, 8307, \n"
-        + "    SDO_POINT_TYPE("
-        + point.getLat()
-        + ","
-        + point.getLng()
-        + ",NULL), NULL, NULL) where user_id = "
-        + userId
-        + ";\n"
-        + "    else \n"
-        + "    insert into current_location (user_id, location, attime) values (\n"
-        + "    "
-        + userId
-        + ", SDO_GEOMETRY(2001, 8307, \n"
-        + "    SDO_POINT_TYPE("
-        + point.getLat()
-        + ","
-        + point.getLng()
-        + ",NULL), NULL, NULL), CURRENT_TIMESTAMP\n"
-        + "    );\n"
-        + "    end if;\n" + "end;";
-    db.executeQuery(updateCurrentLocation);
+  String sql = "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
+  + point.getLat()+","+point.getLng()+","+userId+","+"SDO_GEOMETRY(2001, 8307, \n"
+  + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) );";
 
+  db.executeQuery(sql);
+  
+  /*
+   Find nearest neighbor before update 
+   */
+  String nearestNeighbor = "select /*+ordered*/ user_id, sdo_nn_distance (1) distance from current_location where user_id <> " + userId + " and sdo_nn(location, \n"
+          + "(select location from current_location where user_id = " + userId + "),'sdo_num_res=3',1)='TRUE'  ORDER BY distance ";
+
+  ResultSet rs = db.executeQuery(nearestNeighbor);
+  int neighborId = 0;
+  while (rs.next()) {
+      neighborId = rs.getInt(1);
+      if (neighborId > 0) {
+          break;
+      }
   }
+  System.out.println("neighbor id is :" + neighborId);
+  /*
+   update current location
+   */
+  String updateCurrentLocation = "declare exist number;\n"
+          + "begin\n"
+          + "select count(user_id) into exist from current_location where user_id = " + userId + ";\n"
+          + "if exist > 0 then\n"
+          + "update current_location set attime = CURRENT_TIMESTAMP, location = SDO_GEOMETRY(2001, 8307, \n"
+          + "    SDO_POINT_TYPE(" + point.getLat() + "," + point.getLng() + ",NULL), NULL, NULL) where user_id = " + userId + ";\n"
+          + "    else \n"
+          + "    insert into current_location (user_id, location, attime) values (\n"
+          + "    " + userId + ", SDO_GEOMETRY(2001, 8307, \n"
+          + "    SDO_POINT_TYPE(" + point.getLat() + "," + point.getLng() + ",NULL), NULL, NULL), CURRENT_TIMESTAMP\n"
+          + "    );\n"
+          + "    end if;\n"
+          + "end;";
+  db.executeQuery(updateCurrentLocation);
+
+  /*
+   Find new nearest neighbor id
+   */
+  rs = db.executeQuery(nearestNeighbor);
+  int newNeighborId = 0;
+  while (rs.next()) {
+      newNeighborId = rs.getInt(1);
+      if(newNeighborId > 0) break;
+  }
+  System.out.println("New neighbor id is :" + newNeighborId);
+  
+  /*
+   send notification
+   */
+  if (newNeighborId != neighborId) {
+      //notify 
+      User user = (new UserManager()).getUser(newNeighborId);
+      System.out.println("new neighbor name: "+ user.getNick());
+      NotificationManager notimanager = new NotificationManager();
+//      notimanager.sendNotification(null, sql)
+  }
+
+}
 
   public List<TrjPoint> getTrjPoints(int startPointId, int endPointId) {
     String sql = String
