@@ -19,18 +19,22 @@ public class TrajectoryManager {
 //                ;
 //        db.executeQuery(sql);
         
-        String sql = "declare exist number; begin "+
-                "select count(user_id) into exist  from TRAJECTORY where user_id = "+userId+ ";"+
-                " if exist > 0 then "+
-                "update TRAJECTORY set time =CURRENT_TIMESTAMP, lat= "+point.getLat()+","+
-                "lng = "+point.getLng()+", location=SDO_GEOMETRY(2001, 8307, \n"
-                + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) where user_id = "+userId+";\n"
-                + "else \n"+
-                  "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
-                + point.getLat()+","+point.getLng()+","+userId+","+"SDO_GEOMETRY(2001, 8307, \n"
-                + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) );"
-                + "    end if;\n"
-                + "end;";
+//        String sql = "declare exist number; begin "+
+//                "select count(user_id) into exist  from TRAJECTORY where user_id = "+userId+ ";"+
+//                " if exist > 0 then "+
+//                "update TRAJECTORY set time =CURRENT_TIMESTAMP, lat= "+point.getLat()+","+
+//                "lng = "+point.getLng()+", location=SDO_GEOMETRY(2001, 8307, \n"
+//                + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) where user_id = "+userId+";\n"
+//                + "else \n"+
+//                  "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
+//                + point.getLat()+","+point.getLng()+","+userId+","+"SDO_GEOMETRY(2001, 8307, \n"
+//                + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) );"
+//                + "    end if;\n"
+//                + "end;";
+      
+        String sql = "insert into TRAJECTORY (time, lat, lng, user_id, location) values (CURRENT_TIMESTAMP, "
+        + point.getLat()+","+point.getLng()+","+userId+","+"SDO_GEOMETRY(2001, 8307, \n"
+        + "    SDO_POINT_TYPE("+point.getLat()+","+point.getLng()+",NULL), NULL, NULL) );";
         
         db.executeQuery(sql);
         String updateCurrentLocation = "declare exist number;\n"

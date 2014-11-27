@@ -3,25 +3,23 @@ package edu.usc.palhunter.business;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import edu.usc.palhunter.db.DBHelper;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
+import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
-public class UserManager {
-  private DBHelper db = new DBHelper();
+import edu.usc.palhunter.db.User;
+
+public class UserManager extends TableManager {
   private static final String TABLE_NAME = "USERS";
 
-  public String getUser(int userId) {
-    String sql = String.format("select * from %s where user_id = %d", TABLE_NAME,
-        userId);
-    String result = "";
-    try {
-      ResultSet rs = db.executeQuery(sql);
-      rs.next();
-      result = rs.getString("USER_NAME");
-    } catch (ClassNotFoundException | SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    return result;
-
+  public User getUser(int userId) {
+    String sql = String
+        .format(
+            "select user_id, email, facebook_id, nick, avatar from %s where user_id = :userId",
+            TABLE_NAME);
+    User user = getHandle().createQuery(sql).bind("userId", userId)
+        .map(new User.Mapper()).first();
+    return user;
   }
+
 }

@@ -12,7 +12,8 @@ import org.skife.jdbi.v2.Handle;
 public class DBHelper {
 
   public static final String CLASS_NAME = "oracle.jdbc.driver.OracleDriver";
-  Connection conn_ = null;
+  Connection conn = null;
+  Handle handle = null;
 
   private String userName = "team2";
   private String password = "team2";
@@ -39,24 +40,27 @@ public class DBHelper {
   }
 
   public Handle getHandle() {
-    try {
-      Class.forName(CLASS_NAME);
-    } catch (ClassNotFoundException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+    if (handle == null) {
+      try {
+        Class.forName(CLASS_NAME);
+        String connStr = getConnectionString(IP, port, dbName);
+        DBI dbi = new DBI(connStr, userName, password);
+        handle = dbi.open();
+      } catch (ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
     }
-    String connStr = getConnectionString(IP, port, dbName);
-    DBI dbi = new DBI(connStr, userName, password);
-    Handle h = dbi.open();
-    return h;
+    return handle;
   }
+
   public Connection getConnection() throws ClassNotFoundException, SQLException {
-    if (conn_ == null) {
+    if (conn == null) {
       Class.forName(CLASS_NAME);
       String connStr = getConnectionString(IP, port, dbName);
-      conn_ = DriverManager.getConnection(connStr, userName, password);
+      conn = DriverManager.getConnection(connStr, userName, password);
     }
-    return conn_;
+    return conn;
   }
 
   public ResultSet executeQuery(String sql) throws ClassNotFoundException,
@@ -68,20 +72,26 @@ public class DBHelper {
     return rs;
   }
 
-  public void executeUpdate(String sql) throws ClassNotFoundException, SQLException {
+  public void executeUpdate(String sql) throws ClassNotFoundException,
+      SQLException {
     Connection conn = getConnection();
     PreparedStatement psmt = conn.prepareStatement(sql);
     psmt.execute();
   }
+
   public void close() {
-    if (conn_ != null) {
+    if (conn != null) {
       try {
-        conn_.close();
+        conn.close();
       } catch (SQLException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-      conn_ = null;
+      conn = null;
+    }
+    if (handle != null) {
+      handle.close();
+      handle = null;
     }
   }
 }
