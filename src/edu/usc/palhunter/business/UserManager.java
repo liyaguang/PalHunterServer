@@ -1,12 +1,5 @@
 package edu.usc.palhunter.business;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
-
 import edu.usc.palhunter.db.User;
 
 public class UserManager extends TableManager {
