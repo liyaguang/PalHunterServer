@@ -77,7 +77,8 @@ public class TrajectoryManager {
             //notify 
             User user = (new UserManager()).getUser(newNeighborId);
             System.out.println("new neighbor name: "+ user.getNick());
-            NotificationManagement.sendNotif(userId, NotificationManagement.NEW_NEAREST_NEIGHBOR + user.getNick());
+            NotificationManager notimanager = new NotificationManager();
+//            notimanager.sendNotification(null, sql)
         }
 
     }
