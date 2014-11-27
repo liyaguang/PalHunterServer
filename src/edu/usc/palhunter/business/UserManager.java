@@ -16,7 +16,7 @@ public class UserManager {
     try {
       ResultSet rs = db.executeQuery(sql);
       rs.next();
-      result = rs.getString("USER_NAME");
+      result = rs.getString("NICK");
     } catch (ClassNotFoundException | SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
