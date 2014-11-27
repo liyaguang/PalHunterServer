@@ -2,6 +2,7 @@ package edu.usc.palhunter.business;
 
 import edu.usc.palhunter.db.User;
 
+
 public class UserManager extends TableManager {
   private static final String TABLE_NAME = "USERS";
 
