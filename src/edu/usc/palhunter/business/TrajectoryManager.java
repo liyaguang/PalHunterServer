@@ -3,7 +3,6 @@ package edu.usc.palhunter.business;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 
 import edu.usc.infolab.roadnetwork.IGeoPoint;
 import edu.usc.palhunter.db.DBHelper;

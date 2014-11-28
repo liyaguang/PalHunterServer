@@ -1,12 +1,14 @@
 package edu.usc.palhunter.business;
 
 import edu.usc.palhunter.db.DBHelper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,9 +16,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.NoFixedFacet;
 
 import edu.usc.palhunter.db.Notification;
 import edu.usc.palhunter.util.Utility;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -31,7 +35,7 @@ public class NotificationManager extends TableManager {
         .map(new Notification.Mapper()).first();
   }
 
-  public List<Notification> getUsrNotification(int userId) {
+  public List<Notification> getUserNotification(int userId) {
     String sql = String.format("select * from %s where user_id = :userId",
         TABLE_NAME);
     return getHandle().createQuery(sql).bind("userId", userId)
@@ -52,13 +56,35 @@ public class NotificationManager extends TableManager {
     getHandle().commit();
   }
  
+
+  public String sendUserNotification(List<Integer> userIds, String content,
+      int type) {
+    List<String> regIds = new ArrayList<String>();
+    for (int userId : userIds) {
+      String regId;
+      try {
+        regId = getRegistrationId(userId);
+        regIds.add(regId);
+      } catch (ClassNotFoundException | SQLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+    return sendNotification(regIds, content, type);
+  }
+  
   public String sendNotification(List<String> regIds, String content) {
+    return sendNotification(regIds, content, Notification.SYSTEM_MESSAGE);
+  }
+
+  public String sendNotification(List<String> regIds, String content, int type) {
     String result = "";
     JSONObject message = new JSONObject();
     try {
       message.put("registration_ids", new JSONArray(regIds));
       JSONObject data = new JSONObject();
       data.put("content", content);
+      data.put("type", type);
       message.put("data", data);
       System.out.println(message.toString());
       HttpURLConnection conn = null;
@@ -66,8 +92,7 @@ public class NotificationManager extends TableManager {
       conn = (HttpURLConnection) url.openConnection();
       conn.setRequestMethod("POST");
       conn.setRequestProperty("Content-Type", "application/json");
-      conn.addRequestProperty("Authorization", "key="
-          + GOOGLE_API_KEY);
+      conn.addRequestProperty("Authorization", "key=" + GOOGLE_API_KEY);
       conn.setDoOutput(true);
 
       OutputStream output = conn.getOutputStream();
@@ -100,6 +125,5 @@ public class NotificationManager extends TableManager {
       DBHelper db = new DBHelper();
       db.executeQuery(sql);
       db.close();
-      
   }
 }
