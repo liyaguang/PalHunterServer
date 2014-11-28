@@ -1,28 +1,21 @@
 package edu.usc.palhunter.business;
 
-import edu.usc.palhunter.db.DBHelper;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.NoFixedFacet;
-
+import edu.usc.palhunter.db.DBHelper;
 import edu.usc.palhunter.db.Notification;
 import edu.usc.palhunter.util.Utility;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class NotificationManager extends TableManager {
 

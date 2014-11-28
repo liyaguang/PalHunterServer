@@ -3,6 +3,8 @@ package edu.usc.palhunter.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -13,12 +15,14 @@ public class User {
   private String password;
   private String avatar;
   private String facebookId;
+  private int gender;
 
-  public User(int userId, String email, String nick, String avatar,
+  public User(int userId, String email, String nick, int gender, String avatar,
       String facebookId) {
     this.userId = userId;
     this.email = email;
     this.nick = nick;
+    this.gender = gender;
     this.facebookId = facebookId;
     this.avatar = avatar;
   }
@@ -59,6 +63,14 @@ public class User {
     this.avatar = avatar;
   }
 
+  public int getGender() {
+    return this.gender;
+  }
+
+  public void setGender(int gender) {
+    this.gender = gender;
+  }
+
   public String getFacebookId() {
     return this.facebookId;
   }
@@ -67,8 +79,25 @@ public class User {
     this.facebookId = facebookId;
   }
 
+  public JSONObject toJSONObject() {
+    JSONObject obj = new JSONObject();
+    try {
+      obj.put("userId", this.userId);
+      obj.put("email", this.email);
+      obj.put("nick", nick);
+      obj.put("gender", this.gender);
+      obj.put("avatar", this.avatar);
+      obj.put("facebookId", this.facebookId);
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return obj;
+  }
+
   public String toString() {
-    return String.format("Id:%d, Email:%s", getUserId(), getEmail());
+    // return String.format("Id:%d, Email:%s", getUserId(), getEmail());
+    return toJSONObject().toString();
   }
 
   public static class Mapper implements ResultSetMapper<User> {
@@ -82,7 +111,8 @@ public class User {
       String nick = r.getString("nick");
       String facebookId = r.getString("facebook_id");
       String avatar = r.getString("avatar");
-      return new User(userId, email, nick, avatar, facebookId);
+      int gender = r.getInt("gender");
+      return new User(userId, email, nick, gender, avatar, facebookId);
     }
 
   }

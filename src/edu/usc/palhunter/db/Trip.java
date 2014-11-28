@@ -4,12 +4,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 public class Trip {
 
-  private int id;
+  private int tripId;
   private int userId;
   private int startPointId;
   private int endPointId;
@@ -20,7 +22,7 @@ public class Trip {
   private String info;
 
   public int getId() {
-    return this.id;
+    return this.tripId;
   }
 
   public int getUserId() {
@@ -61,7 +63,7 @@ public class Trip {
 
   public Trip(int id, int userId, int startPointId, int endPointId,
       double distance, double calorie, int steps, Timestamp time, String info) {
-    this.id = id;
+    this.tripId = id;
     this.userId = userId;
     this.startPointId = startPointId;
     this.endPointId = endPointId;
@@ -70,6 +72,29 @@ public class Trip {
     this.time = time;
     this.info = info;
     this.steps = steps;
+  }
+
+  public JSONObject toJSONObject() {
+    JSONObject obj = new JSONObject();
+    try {
+      obj.put("trip_id", this.tripId);
+      obj.put("user_id", this.userId);
+      obj.put("start_point_id", this.startPointId);
+      obj.put("end_point_id", this.endPointId);
+      obj.put("distance", this.distance);
+      obj.put("calorie", this.calorie);
+      obj.put("time", this.time);
+      obj.put("info", this.info);
+      obj.put("steps", this.steps);
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return obj;
+  }
+
+  public String toString() {
+    return toJSONObject().toString();
   }
 
   public static class Mapper implements ResultSetMapper<Trip> {

@@ -1,5 +1,7 @@
 package edu.usc.palhunter.db;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -66,6 +68,24 @@ public class Notification {
 
   public void setType(int type) {
     this.type = type;
+  }
+
+  public JSONObject toJSONObject() {
+    JSONObject obj = new JSONObject();
+    try {
+      obj.put("notificationId", this.id);
+      obj.put("usrId", this.userId);
+      obj.put("content", this.content);
+      obj.put("time", this.time);
+      obj.put("type", this.type);
+    } catch (JSONException exc) {
+      exc.printStackTrace();
+    }
+    return obj;
+  }
+
+  public String toString() {
+    return toJSONObject().toString();
   }
 
   public static class Mapper implements ResultSetMapper<Notification> {

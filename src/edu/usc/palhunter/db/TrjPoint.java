@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -45,6 +47,24 @@ public class TrjPoint {
     this.lat = lat;
     this.lng = lng;
     this.time = time;
+  }
+
+  public JSONObject toJSONObject() {
+    JSONObject obj = new JSONObject();
+    try {
+      obj.put("pointId", this.pointId);
+      obj.put("userId", this.userId);
+      obj.put("lat", this.lat);
+      obj.put("lng", this.lng);
+      obj.put("time", this.time);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return obj;
+  }
+
+  public String toString() {
+    return toJSONObject().toString();
   }
 
   public static class Mapper implements ResultSetMapper<TrjPoint> {
