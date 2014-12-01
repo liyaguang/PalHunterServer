@@ -3,7 +3,6 @@ package edu.usc.palhunter.business;
 import java.sql.SQLException;
 import java.util.List;
 
-
 import edu.usc.infolab.roadnetwork.IGeoPoint;
 import edu.usc.palhunter.db.DBHelper;
 import edu.usc.palhunter.db.Notification;
@@ -32,30 +31,30 @@ public class TrajectoryManager extends TableManager {
         + ","
         + "SDO_GEOMETRY(2001, 8307, \n"
         + "    SDO_POINT_TYPE("
-        + point.getLat() + "," + point.getLng() + ",NULL), NULL, NULL) )";
-
+        + point.getLng() + "," + point.getLat() + ",NULL), NULL, NULL) )";
 
     db.executeQuery(sql);
-    
-    /*
-     * Find nearest neighbor before update
-     */
-    String nearestNeighbor = "select /*+ordered*/ user_id, sdo_nn_distance (1) distance from current_location where user_id <> "
-        + userId
-        + " and sdo_nn(location, \n"
-        + "(select location from current_location where user_id = "
-        + userId
-        + "),'sdo_num_res=3',1)='TRUE'  ORDER BY distance ";
 
-    ResultSet rs = db.executeQuery(nearestNeighbor);
-    int neighborId = 0;
-    while (rs.next()) {
-      neighborId = rs.getInt(1);
-      if (neighborId > 0) {
-        break;
-      }
-    }
-    System.out.println("neighbor id is :" + neighborId);
+    // /*
+    // * Find nearest neighbor before update
+    // */
+    // String nearestNeighbor =
+    // "select /*+ordered*/ user_id, sdo_nn_distance (1) distance from current_location where user_id <> "
+    // + userId
+    // + " and sdo_nn(location, \n"
+    // + "(select location from current_location where user_id = "
+    // + userId
+    // + "),'sdo_num_res=1',1)='TRUE'  ORDER BY distance ";
+    //
+    // ResultSet rs = db.executeQuery(nearestNeighbor);
+    // int neighborId = 0;
+    // while (rs.next()) {
+    // neighborId = rs.getInt(1);
+    // if (neighborId > 0) {
+    // break;
+    // }
+    // }
+    // System.out.println("neighbor id is :" + neighborId);
     /*
      * update current location
      */
@@ -67,9 +66,9 @@ public class TrajectoryManager extends TableManager {
         + "if exist > 0 then\n"
         + "update current_location set attime = CURRENT_TIMESTAMP, location = SDO_GEOMETRY(2001, 8307, \n"
         + "    SDO_POINT_TYPE("
-        + point.getLat()
-        + ","
         + point.getLng()
+        + ","
+        + point.getLat()
         + ",NULL), NULL, NULL) where user_id = "
         + userId
         + ";\n"
@@ -79,55 +78,56 @@ public class TrajectoryManager extends TableManager {
         + userId
         + ", SDO_GEOMETRY(2001, 8307, \n"
         + "    SDO_POINT_TYPE("
-        + point.getLat()
-        + ","
         + point.getLng()
+        + ","
+        + point.getLat()
         + ",NULL), NULL, NULL), CURRENT_TIMESTAMP\n"
         + "    );\n"
         + "    end if;\n" + "end;";
     db.executeQuery(updateCurrentLocation);
 
+    // /*
+    // * Find new nearest neighbor id
+    // */
+    // rs = db.executeQuery(nearestNeighbor);
+    // int newNeighborId = 0;
+    // while (rs.next()) {
+    // newNeighborId = rs.getInt(1);
+    // if (newNeighborId > 0)
+    // break;
+    // }
+    // System.out.println("New neighbor id is :" + newNeighborId);
 
-        /*
-         Find new nearest neighbor id
-         */
-        rs = db.executeQuery(nearestNeighbor);
-        int newNeighborId = 0;
-        while (rs.next()) {
-            newNeighborId = rs.getInt(1);
-            if(newNeighborId > 0) break;
-        }
-        System.out.println("New neighbor id is :" + newNeighborId);
-        
-        /*
-        close db
-        */
-        db.close();
-        /*
-         send and save notification
-         */
-        if (newNeighborId != neighborId) {
-            User user = (new UserManager()).getUser(newNeighborId);
-            if (user ==  null) return;
-            String notificationMessage  =  NotificationManager.NEAREST_FRIEND+user.getNick();
-            Notification noti = new Notification(-1, userId, notificationMessage, null, 1);
-            System.out.println("new neighbor name: "+ user.getNick());
-            NotificationManager notimanager = new NotificationManager();
-            
-            /**
-             * send notification
-             */
-            String rid = notimanager.getRegistrationId(userId);
-            ArrayList<String> rids = new ArrayList<>();
-            rids.add(rid);
-            notimanager.sendNotification(rids, notificationMessage);
-            /**
-             * save notification
-             */
-            notimanager.saveNotification(noti);
-        }
-
-
+    /*
+     * close db
+     */
+    db.close();
+    /*
+     * send and save notification
+     */
+    // if (newNeighborId != neighborId) {
+    // User user = (new UserManager()).getUser(newNeighborId);
+    // if (user == null)
+    // return;
+    // String notificationMessage = NotificationManager.NEAREST_FRIEND
+    // + user.getNick();
+    // Notification noti = new Notification(-1, userId, notificationMessage,
+    // null, 1);
+    // System.out.println("new neighbor name: " + user.getNick());
+    // NotificationManager notimanager = new NotificationManager();
+    //
+    // /**
+    // * send notification
+    // */
+    // String rid = notimanager.getRegistrationId(userId);
+    // ArrayList<String> rids = new ArrayList<>();
+    // rids.add(rid);
+    // notimanager.sendNotification(rids, notificationMessage);
+    // /**
+    // * save notification
+    // */
+    // notimanager.saveNotification(noti);
+    // }
 
   }
 
